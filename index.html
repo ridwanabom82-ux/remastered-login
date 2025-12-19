@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XennZyy Store – Secure Login</title>
+
+<style>
+:root{
+    --main:#00ffd0;
+    --dark:#0e0e0e;
+    --glass:rgba(255,255,255,.08);
+}
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at top, #1a1a1a, #000),
+        url('https://files.catbox.moe/qjwzka.png') center/cover no-repeat;
+    font-family:'Segoe UI',system-ui,sans-serif;
+    color:#fff;
+}
+
+.card{
+    width:100%;
+    max-width:420px;
+    background:var(--glass);
+    backdrop-filter:blur(14px);
+    border-radius:18px;
+    padding:28px;
+    box-shadow:0 25px 60px rgba(0,0,0,.6);
+    animation:fade .6s ease;
+}
+
+@keyframes fade{
+    from{opacity:0; transform:translateY(20px)}
+    to{opacity:1; transform:none}
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:20px;
+}
+.logo img{
+    width:120px;
+}
+
+h2{
+    margin:0 0 15px;
+    text-align:center;
+    font-weight:600;
+}
+
+input{
+    width:100%;
+    padding:13px 14px;
+    border-radius:10px;
+    border:1px solid transparent;
+    background:rgba(0,0,0,.45);
+    color:white;
+    margin-top:12px;
+    font-size:15px;
+}
+input:focus{
+    outline:none;
+    border-color:var(--main);
+}
+
+button{
+    width:100%;
+    padding:13px;
+    margin-top:14px;
+    border-radius:10px;
+    border:none;
+    background:var(--main);
+    font-weight:600;
+    font-size:15px;
+    cursor:pointer;
+}
+button:hover{
+    filter:brightness(.92);
+}
+
+.secondary{
+    background:transparent;
+    border:1px solid var(--main);
+    color:var(--main);
+}
+
+.info{
+    margin-top:12px;
+    font-size:14px;
+    line-height:1.5;
+}
+.error{color:#ff6b6b}
+.success{color:#7CFF9B}
+
+.footer{
+    margin-top:18px;
+}
+.footer a{
+    text-decoration:none;
+}
+
+.cs{
+    background:#25D366;
+    color:white;
+}
+
+.hidden{display:none}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div class="card" id="loginCard">
+    <div class="logo">
+        <img src="https://files.catbox.moe/4dcvwa.png">
+    </div>
+
+    <h2>Secure Login</h2>
+
+    <input id="username" placeholder="Username">
+    <input id="password" type="password" placeholder="Password">
+
+    <button onclick="login()">LOGIN</button>
+    <button class="secondary" onclick="requestPassword()">MINTA PASSWORD</button>
+
+    <div class="info" id="info"></div>
+
+    <div class="footer">
+        <a href="https://wa.me/6281313156016" target="_blank">
+            <button class="cs">CS : XennZyy</button>
+        </a>
+    </div>
+</div>
+
+<!-- PAGE 2 (DUMMY) -->
+<div class="card hidden" id="dashboard">
+    <h2 class="success">✅ Login Berhasil</h2>
+    <p>Halaman produk belum dibuat.</p>
+    <p>Ini hanya halaman percobaan login.</p>
+    <button onclick="logout()">LOGOUT</button>
+</div>
+
+<script>
+const USERNAME_VALID = "costumer xennzyy";
+const OTP_EXPIRE = 60 * 60 * 1000; // 1 jam
+
+function timeBase(){
+    const n = new Date();
+    return (
+        String(n.getDate()).padStart(2,'0') +
+        String(n.getMonth()+1).padStart(2,'0') +
+        String(n.getFullYear()).slice(-2) +
+        String(n.getHours()).padStart(2,'0')
+    );
+}
+
+function requestPassword(){
+    const otp = timeBase() + Math.floor(1000 + Math.random()*9000);
+    sessionStorage.setItem("otp", otp);
+    sessionStorage.setItem("otp_time", Date.now());
+
+    document.getElementById("info").innerHTML =
+        `<span class="success">
+        Password sementara anda:<br>
+        <b>${otp}</b><br>
+        (Berlaku 1 jam & sekali pakai)
+        </span>`;
+}
+
+function login(){
+    const u = username.value.trim();
+    const p = password.value.trim();
+    const info = document.getElementById("info");
+
+    const otp = sessionStorage.getItem("otp");
+    const t = sessionStorage.getItem("otp_time");
+
+    if(u !== USERNAME_VALID){
+        info.innerHTML = `<span class="error">Username tidak terdaftar</span>`;
+        return;
+    }
+    if(!otp){
+        info.innerHTML = `<span class="error">Silakan minta password terlebih dahulu</span>`;
+        return;
+    }
+    if(Date.now() - t > OTP_EXPIRE){
+        info.innerHTML = `<span class="error">Password sudah kadaluarsa</span>`;
+        sessionStorage.clear();
+        return;
+    }
+    if(p !== otp){
+        info.innerHTML = `<span class="error">Password salah</span>`;
+        return;
+    }
+
+    sessionStorage.clear();
+    loginCard.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+}
+
+function logout(){
+    location.reload();
+}
+</script>
+
+</body>
+</html>
